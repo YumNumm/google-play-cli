@@ -1,7 +1,10 @@
 min_version = "2025.11.11"
 
 [tools]
+actionlint = "latest"
 go = "latest"
+pinact = "latest"
+shellcheck = "latest"
 
 [settings]
 lockfile = true
