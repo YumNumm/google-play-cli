@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -19,43 +19,63 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
 
-  build:
+  test:
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
       - name: Run tests
         run: go test ./...
 
-      - name: Build binaries
+  build:
+    needs: [release-please, test]
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
-          platforms=(
-            "linux/amd64"
-            "linux/arm64"
-            "darwin/amd64"
-            "darwin/arm64"
-            "windows/amd64"
-          )
-          for platform in "${platforms[@]}"; do
-            GOOS="${platform%/*}"
-            GOARCH="${platform#*/}"
-            ext=""
-            if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
-            output="google-play-cli_${GOOS}_${GOARCH}${ext}"
-            echo "Building ${output}..."
-            GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w" -o "$output" .
-          done
+          ext=""
+          if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
+          go build -ldflags="-s -w" -o "google-play-cli_${GOOS}_${GOARCH}${ext}" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: google-play-cli_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: google-play-cli_*
 
+  upload:
+    needs: [release-please, build]
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
       - name: Create checksums
-        run: sha256sum google-play-cli_* > checksums.txt
-
+        run: sha256sum artifacts/google-play-cli_* > artifacts/checksums.txt
       - name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.release-please.outputs.tag_name }} google-play-cli_* checksums.txt --repo ${{ github.repository }}
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} artifacts/* --repo ${{ github.repository }}
