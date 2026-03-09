@@ -1,0 +1,8 @@
+min_version = "2025.11.11"
+
+[tools]
+go = "latest"
+
+[settings]
+lockfile = true
+experimental = true

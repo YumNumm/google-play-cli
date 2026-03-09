@@ -1,0 +1,13 @@
+# Binary
+google-play-cli
+google-play-cli.exe
+google-play-cli_*
+
+# Test coverage
+coverage.out
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
