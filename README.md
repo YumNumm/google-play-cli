@@ -1,4 +1,4 @@
-# google-play-cli
+# [UNDER DEVELOPMENT] google-play-cli
 
 Google Play Android Publisher API v3 を操作する CLI ツール。
 [codemagic cli-tools](https://github.com/codemagic-ci-cd/cli-tools) の `google-play` コマンドの代替として、Workload Identity Federation (WIF) をネイティブサポートする。
