@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/YumNumm/google-play-cli/compare/v1.0.0...v1.0.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* AABアップロード時のContent-Typeを明示的に指定 ([9589df7](https://github.com/YumNumm/google-play-cli/commit/9589df7b680d19719bff8027813b0c379dd6c6bb))
+
 ## 1.0.0 (2026-03-09)
 
 
