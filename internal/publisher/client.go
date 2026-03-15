@@ -6,6 +6,7 @@ import (
 	"io"
 
 	androidpublisher "google.golang.org/api/androidpublisher/v3"
+	"google.golang.org/api/googleapi"
 )
 
 // Client abstracts the Google Play Android Publisher API operations.
@@ -55,7 +56,7 @@ func (c *googleClient) DeleteEdit(ctx context.Context, packageName, editID strin
 }
 
 func (c *googleClient) UploadBundle(ctx context.Context, packageName, editID string, bundle io.Reader) (int64, error) {
-	b, err := c.service.Edits.Bundles.Upload(packageName, editID).Media(bundle).Context(ctx).Do()
+	b, err := c.service.Edits.Bundles.Upload(packageName, editID).Media(bundle, googleapi.ContentType("application/octet-stream")).Context(ctx).Do()
 	if err != nil {
 		return 0, fmt.Errorf("failed to upload bundle: %w", err)
 	}
